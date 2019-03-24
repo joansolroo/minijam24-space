@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 [RequireComponent(typeof(ShuttleProfile))]
 public class MisionControl : MonoBehaviour
@@ -9,16 +9,30 @@ public class MisionControl : MonoBehaviour
     ShuttleProfile shuttleProfile;
     public Shuttle template;
     public Shuttle currentShuttle;
+
+    public Shuttle MattShuttle;
+    public Shuttle MarkShuttle;
+    public Shuttle JesseShuttle;
+
     List<Shuttle> allShuttles;
 
 
     [Header("Buttons")]
+    [SerializeField] Button prepareMissionButton;
     [SerializeField] Button buttonLaunch;
     [SerializeField] Button buttonLeft;
     [SerializeField] Button buttonRight;
     [SerializeField] Button buttonForward;
     [SerializeField] Button buttonBackwards;
     [SerializeField] Button buttonLand;
+
+    [SerializeField] Toggle SelectMatt;
+    [SerializeField] Toggle SelectMark;
+    [SerializeField] Toggle SelectJesse;
+
+    [SerializeField] GameObject MattGone;
+    [SerializeField] GameObject MarkGone;
+    [SerializeField] GameObject JesseGone;
     //[SerializeField] Button buttonStabilize;
 
     [SerializeField] ProgressBar fuelBar;
@@ -41,6 +55,7 @@ public class MisionControl : MonoBehaviour
     [SerializeField] public Text durationTrip;
     [SerializeField] public Orbit marsOrbit;
     [SerializeField] public Transform mars;
+    [SerializeField] public Text endGameText;
     // Start is called before the first frame update
     void Start()
     {
@@ -54,9 +69,10 @@ public class MisionControl : MonoBehaviour
         UpdateButtonsState();
 
         RaycastHit hit;
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 100000, UI3Dlayer))
+        if (!EventSystem.current.IsPointerOverGameObject()
+            && Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 100000, UI3Dlayer))
         {
-            
+
             Vector3 p = hit.point;
             p.y = 0;
             if (Vector3.Distance(p, transform.position) < 100)
@@ -77,7 +93,24 @@ public class MisionControl : MonoBehaviour
         {
             currentShuttle.RequestAction(Shuttle.ShuttleAction.deactivate);
         }
-        currentShuttle = GameObject.Instantiate<Shuttle>(template);
+        {
+            if (SelectMatt.isOn && !MattShuttle.launched)
+            {
+                currentShuttle = MattShuttle;
+            }
+            else if (SelectMark.isOn && !MarkShuttle.launched)
+            {
+                currentShuttle = MarkShuttle;
+            }
+            else if (SelectJesse.isOn && !JesseShuttle.launched)
+            {
+                currentShuttle = JesseShuttle;
+            }
+            else
+            {
+                currentShuttle = GameObject.Instantiate<Shuttle>(template);
+            }
+        }
         currentShuttle.gameObject.SetActive(true);
         currentShuttle.transform.parent = this.transform;
         currentShuttle.transform.localPosition = template.transform.localPosition;
@@ -86,7 +119,7 @@ public class MisionControl : MonoBehaviour
         //currentShuttle.transform.parent = this.transform;
 
         labelFollowingShuttle.target = currentShuttle.gameObject;
-        
+
         labelFollowingShuttle.gameObject.SetActive(true);
 
         currentShuttle.profile = shuttleProfile;
@@ -133,63 +166,78 @@ public class MisionControl : MonoBehaviour
 
     [SerializeField] Text OppyLabel;
     [SerializeField] Text OppyStatus;
+    [SerializeField] AudioSource OppyVoice;
     public void DoLand()
     {
-       
-        if(Vector3.Distance(currentShuttle.transform.position, this.transform.position) < 10)
+
+        if (Vector3.Distance(currentShuttle.transform.position, this.transform.position) < 10)
         {
 
         }
-        else if(Vector3.Distance(currentShuttle.transform.position, mars.transform.position) < 10)
+        else if (Vector3.Distance(currentShuttle.transform.position, mars.transform.position) < 10)
         {
             OppyLabel.color = Color.green;
             OppyStatus.text = "Online";
             OppyStatus.color = Color.green;
-            
+            if (endGameText.gameObject.active == false)
+            {
+                OppyVoice.Play();
+                endGameText.gameObject.SetActive(true);
+                endGameText.text = "Oppy is alive and well, thank you "+currentShuttle.name+"!";
+            }
+
         }
         currentShuttle.DoLand();
     }
     void UpdateButtonsState()
     {
         
+        JesseGone.SetActive(JesseShuttle.launched);
+        MattGone.SetActive(MattShuttle.launched);
+        MarkGone.SetActive(MarkShuttle.launched);
+
         bool launched = currentShuttle.launched;
-        bool active = launched && currentShuttle.hp > 0 && currentShuttle.fuel > 0 && (!currentShuttle.tripulated || currentShuttle.food>0 && currentShuttle.oxigen>0);
+        bool active = launched && currentShuttle.hp > 0 && currentShuttle.fuel > 0 && (!currentShuttle.tripulated || currentShuttle.food > 0 && currentShuttle.oxigen > 0);
         bool unreachable = currentShuttle.hp == 0 || currentShuttle.distanceToBase > shuttleProfile.maxRange;
         buttonLaunch.interactable = !launched;
+
+
+        prepareMissionButton.interactable = launched;
 
         buttonForward.interactable = active;
         buttonBackwards.interactable = active;
         buttonLeft.interactable = active;
         buttonRight.interactable = active;
-        buttonLand.interactable = launched && active && !unreachable && Vector3.Distance(currentShuttle.transform.position, this.transform.position) < 10 || Vector3.Distance(currentShuttle.transform.position, mars.transform.position) < 10 ;
+        buttonLand.interactable = currentShuttle.tripulated && launched && active && !unreachable && (Vector3.Distance(currentShuttle.transform.position, this.transform.position) < 10 || Vector3.Distance(currentShuttle.transform.position, mars.transform.position) < 10);
 
         buttonDepartureLeft.SetActive(!launched);
         buttonDepartureRight.SetActive(!launched);
         hpBar.SetValue(shuttleProfile.maxFuelStage1 > 0 ? (currentShuttle.fuelStage1 * 100 / shuttleProfile.maxFuelStage1) : 0);
-        fuelBar.SetValue(shuttleProfile.maxFuel>0? (currentShuttle.fuel*100 / shuttleProfile.maxFuel):0);
+        fuelBar.SetValue(shuttleProfile.maxFuel > 0 ? (currentShuttle.fuel * 100 / shuttleProfile.maxFuel) : 0);
         oxigenBar.SetValue(shuttleProfile.maxOxigen > 0 ? (currentShuttle.oxigen * 100 / shuttleProfile.maxOxigen) : 0);
         foodBar.SetValue(shuttleProfile.maxFood > 0 ? (currentShuttle.food * 100 / shuttleProfile.maxFood) : 0);
-       // hpBar.SetValue(shuttleProfile.maxHp > 0 ? (currentShuttle.hp * 100 / shuttleProfile.maxHp) : 0);
+        // hpBar.SetValue(shuttleProfile.maxHp > 0 ? (currentShuttle.hp * 100 / shuttleProfile.maxHp) : 0);
 
-        
-        shipFail.SetActive(currentShuttle.fuel == 0 || currentShuttle.hp==0);
+
+        shipFail.SetActive(currentShuttle.fuel == 0 || currentShuttle.hp == 0);
         shipDead.SetActive(currentShuttle.tripulated && (currentShuttle.food == 0 || currentShuttle.oxigen == 0));
         shipOutOfRange.SetActive(unreachable);
 
         labelFollowingShuttle.gameObject.SetActive(currentShuttle.active && currentShuttle.hp > 0);
+
 
         labelTraveled.gameObject.SetActive(launched);
         durationTrip.gameObject.SetActive(launched);
         if (active)
         {
             labelTraveled.text = "Distance traveled: " + (currentShuttle.traveled * 2).ToString("  0.0") + " million Km";
-            durationTrip.text = "Mission duration: " + (marsOrbit.day-misionStartDate).ToString("  0") + " SOL";
+            durationTrip.text = "Mission duration: " + (marsOrbit.day - misionStartDate).ToString("  0") + " SOL";
         }
     }
-    
+
     private void OnDrawGizmos()
     {
-        int layer = 2 << (5-1);//ui
+        int layer = 2 << (5 - 1);//ui
         RaycastHit hit;
         //if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition),out hit, 1000,layer))
         {

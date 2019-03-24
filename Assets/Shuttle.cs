@@ -172,9 +172,14 @@ public class Shuttle : MonoBehaviour
                 {
                     food = Mathf.Max(0, food - Time.deltaTime);
                     oxigen = Mathf.Max(0, oxigen - Time.deltaTime);
+                    if(food ==0 || oxigen == 0)
+                    {
+                        RequestAction(ShuttleAction.deactivate);
+                    }
                 }
                 traveled += Vector3.Distance(transform.position, previousPosition);
                 previousPosition = transform.position;
+
             }
             ++frame;
             if (frame % 10 == 0)

@@ -14,6 +14,8 @@ public class UIFollow : MonoBehaviour
     public Canvas canvas;
     RectTransform rt;
     RectTransform parent;
+
+    [SerializeField] MonoBehaviour[] managedScripts;
     private void Start()
     {
         if(worldCamera==null)
@@ -27,11 +29,19 @@ public class UIFollow : MonoBehaviour
     }
     private void LateUpdate()
     {
-        UpdatePosition();
+        if (target.active)
+        {
+            UpdatePosition();
+        }
+        foreach(MonoBehaviour script in managedScripts)
+        {
+            script.enabled = target.active;
+        }
     }
 
     void UpdatePosition()
     {
+       
         var vp = worldCamera.WorldToViewportPoint(target.transform.position);
         var sp = canvas.worldCamera.ViewportToScreenPoint(vp);
         Vector3 worldPoint;
