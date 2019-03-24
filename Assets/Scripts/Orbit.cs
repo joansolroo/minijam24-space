@@ -8,12 +8,12 @@ public class Orbit : MonoBehaviour
 {
     [SerializeField] EllipseRenderer orbitRenderer;
 
-    [SerializeField] [Range(1,1000)]float period;
+    [SerializeField] [Range(1, 1000)] float period;
 
     [SerializeField] int firstDay;
     [SerializeField] float daysYear;
-    [SerializeField] float day;
-    [SerializeField] [Range(0,1)]float t;
+    [SerializeField] public float day;
+    [SerializeField] [Range(0, 1)] float t;
     [SerializeField] bool randomStart = false;
 
     [SerializeField] Text calendar;
@@ -22,26 +22,26 @@ public class Orbit : MonoBehaviour
         if (randomStart)
         {
             t = Random.Range(0f, 1f);
-        }   
+        }
     }
     private void OnValidate()
     {
         Start();
         Update();
-        
-       // orbitRenderer.transform.position = parent.transform.position + offset;
+
+        // orbitRenderer.transform.position = parent.transform.position + offset;
     }
     private void Update()
     {
         t += Time.deltaTime / period;
-        day = firstDay+t* daysYear;
+        day = firstDay + t * daysYear;
         if (calendar != null)
         {
             calendar.text = "DATE: SOL " + (int)day;
         }
+
         Vector3 p = orbitRenderer.GetPointInUniverse(t % 1);
         this.transform.position = p;
-       // this.transform.localEulerAngles = new Vector3(0, Time.time % 1 * 360, 0);
 
     }
 

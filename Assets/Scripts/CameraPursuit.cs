@@ -28,7 +28,7 @@ public class CameraPursuit : MonoBehaviour
             rotation.y += -(newDrag.y - drag.y)/Camera.main.pixelHeight;
             rotation.y = Mathf.Clamp(rotation.y, -1, 0);
             rotation.x += (newDrag.x - drag.x) / Camera.main.pixelWidth;
-            rotation.x = Mathf.Clamp(rotation.x, -1, 1);
+            //rotation.x = Mathf.Clamp(rotation.x, -1, 1);
             drag = newDrag;
 
         }
@@ -36,7 +36,7 @@ public class CameraPursuit : MonoBehaviour
     void LateUpdate()
     {
         this.transform.position = target.transform.position;
-        this.transform.eulerAngles = new Vector3(90 + rotation.y * 90, 90 + rotation.x * 45, 0);
+        this.transform.eulerAngles = new Vector3(90 + rotation.y * 90, 90 + rotation.x * 180, 0);
        
         
         distance -= Input.mouseScrollDelta.y* zoomSpeed;

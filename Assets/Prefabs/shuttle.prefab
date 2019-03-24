@@ -910,12 +910,14 @@ MonoBehaviour:
   active: 1
   tripulated: 1
   launched: 0
+  landed: 0
   fuelStage1: 0
   fuel: 10
   oxigen: 5
   food: 5
   hp: 5
   ttl: 100
+  traveled: 0
   distanceToBase: 0
   theoryLine: {fileID: 8273249510150986445}
   updatedLine: {fileID: 8273249510840924370}

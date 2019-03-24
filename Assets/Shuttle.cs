@@ -24,12 +24,14 @@ public class Shuttle : MonoBehaviour
     [SerializeField] public bool active = true;
     [SerializeField] public bool tripulated = false;
     [SerializeField] public bool launched = false;
+    [SerializeField] public bool landed = false;
     [SerializeField] public float fuelStage1;
     [SerializeField] public float fuel;
     [SerializeField] public float oxigen;
     [SerializeField] public float food;
     [SerializeField] public float hp;
     [SerializeField] public float ttl;
+    [SerializeField] public float traveled;
     [SerializeField] public float distanceToBase;
     [Header("paths")]
     [SerializeField] LineRenderer theoryLine;
@@ -63,7 +65,7 @@ public class Shuttle : MonoBehaviour
         }
     }
 
-
+    Vector3 previousPosition;
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -74,6 +76,7 @@ public class Shuttle : MonoBehaviour
                 if (nextAction == ShuttleAction.launch)
                 {
                     StartCoroutine(DoLaunch());
+                    previousPosition = transform.position;
                 }
             }
             else
@@ -151,6 +154,7 @@ public class Shuttle : MonoBehaviour
         nextAction = ShuttleAction.none;
     }
     int frame = 0;
+
     private void Update()
     {
         if (hp > 0 && active)
@@ -169,6 +173,8 @@ public class Shuttle : MonoBehaviour
                     food = Mathf.Max(0, food - Time.deltaTime);
                     oxigen = Mathf.Max(0, oxigen - Time.deltaTime);
                 }
+                traveled += Vector3.Distance(transform.position, previousPosition);
+                previousPosition = transform.position;
             }
             ++frame;
             if (frame % 10 == 0)
@@ -213,18 +219,28 @@ public class Shuttle : MonoBehaviour
         theoryLine.positionCount = theoreticTrajectory.Count;
         theoryLine.SetPositions(theoreticTrajectory.ToArray());
     }
-
-    [SerializeField] Color pathColorLost = new Color(255, 0, 0, 100);
-    private void OnCollisionEnter(Collision collision)
+    public void DoExplode()
     {
-
-        Debug.Log("Shuttle collision (" + collision.gameObject.name + ")");
         hp = 0;
         explosion.Play();
         pastLine.startColor = pastLine.endColor = pathColorLost;
         updatedLine.startColor = updatedLine.endColor = pathColorLost;
         //updatedLine.gameObject.SetActive(false);
         shipModel.SetActive(false);
+        active = false;
+    }
+    public void DoLand()
+    {
+        shipModel.SetActive(false);
+        active = false;
+        landed = true;
+    }
+    [SerializeField] Color pathColorLost = new Color(255, 0, 0, 100);
+    private void OnCollisionEnter(Collision collision)
+    {
+
+        Debug.Log("Shuttle collision (" + collision.gameObject.name + ")");
+        DoExplode();
     }
 
     List<Vector3> ComputeTrajectory(out bool expectedCollision)

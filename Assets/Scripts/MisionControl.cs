@@ -18,7 +18,8 @@ public class MisionControl : MonoBehaviour
     [SerializeField] Button buttonRight;
     [SerializeField] Button buttonForward;
     [SerializeField] Button buttonBackwards;
-    [SerializeField] Button buttonStabilize;
+    [SerializeField] Button buttonLand;
+    //[SerializeField] Button buttonStabilize;
 
     [SerializeField] ProgressBar fuelBar;
     [SerializeField] ProgressBar hpBar;
@@ -34,6 +35,12 @@ public class MisionControl : MonoBehaviour
 
     [SerializeField] UIFollow labelFollowingShuttle;
     [SerializeField] [Range(0, 1)] float departure;
+    [SerializeField] LayerMask UI3Dlayer;
+
+    [SerializeField] public Text labelTraveled;
+    [SerializeField] public Text durationTrip;
+    [SerializeField] public Orbit marsOrbit;
+    [SerializeField] public Transform mars;
     // Start is called before the first frame update
     void Start()
     {
@@ -46,14 +53,13 @@ public class MisionControl : MonoBehaviour
     {
         UpdateButtonsState();
 
-        int layer = 2 << (5 - 1);//ui
         RaycastHit hit;
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 1000, layer))
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 100000, UI3Dlayer))
         {
             
             Vector3 p = hit.point;
             p.y = 0;
-            if (Vector3.Distance(p, transform.position) < 50)
+            if (Vector3.Distance(p, transform.position) < 100)
             {
                 targetLaunch = p;
                 transform.LookAt(hit.point);
@@ -73,10 +79,11 @@ public class MisionControl : MonoBehaviour
         }
         currentShuttle = GameObject.Instantiate<Shuttle>(template);
         currentShuttle.gameObject.SetActive(true);
-        currentShuttle.transform.parent = this.transform.parent;
+        currentShuttle.transform.parent = this.transform;
         currentShuttle.transform.localPosition = template.transform.localPosition;
         currentShuttle.transform.localScale = template.transform.localScale;
-        currentShuttle.transform.parent = this.transform;
+        currentShuttle.transform.localRotation = template.transform.localRotation;
+        //currentShuttle.transform.parent = this.transform;
 
         labelFollowingShuttle.target = currentShuttle.gameObject;
         
@@ -89,8 +96,10 @@ public class MisionControl : MonoBehaviour
         currentShuttle.fuel = shuttleProfile.maxFuel;
         currentShuttle.fuelStage1 = shuttleProfile.maxFuelStage1;
     }
+    int misionStartDate;
     public void DoLaunch()
     {
+        misionStartDate = (int)marsOrbit.day;
         currentShuttle.RequestAction(Shuttle.ShuttleAction.launch);
     }
     public void DoForward()
@@ -121,8 +130,28 @@ public class MisionControl : MonoBehaviour
     {
         this.transform.Rotate(0, 10, 0);
     }
+
+    [SerializeField] Text OppyLabel;
+    [SerializeField] Text OppyStatus;
+    public void DoLand()
+    {
+       
+        if(Vector3.Distance(currentShuttle.transform.position, this.transform.position) < 10)
+        {
+
+        }
+        else if(Vector3.Distance(currentShuttle.transform.position, mars.transform.position) < 10)
+        {
+            OppyLabel.color = Color.green;
+            OppyStatus.text = "Online";
+            OppyStatus.color = Color.green;
+            
+        }
+        currentShuttle.DoLand();
+    }
     void UpdateButtonsState()
     {
+        
         bool launched = currentShuttle.launched;
         bool active = launched && currentShuttle.hp > 0 && currentShuttle.fuel > 0 && (!currentShuttle.tripulated || currentShuttle.food>0 && currentShuttle.oxigen>0);
         bool unreachable = currentShuttle.hp == 0 || currentShuttle.distanceToBase > shuttleProfile.maxRange;
@@ -132,7 +161,7 @@ public class MisionControl : MonoBehaviour
         buttonBackwards.interactable = active;
         buttonLeft.interactable = active;
         buttonRight.interactable = active;
-        buttonStabilize.interactable = active;
+        buttonLand.interactable = launched && active && !unreachable && Vector3.Distance(currentShuttle.transform.position, this.transform.position) < 10 || Vector3.Distance(currentShuttle.transform.position, mars.transform.position) < 10 ;
 
         buttonDepartureLeft.SetActive(!launched);
         buttonDepartureRight.SetActive(!launched);
@@ -147,7 +176,15 @@ public class MisionControl : MonoBehaviour
         shipDead.SetActive(currentShuttle.tripulated && (currentShuttle.food == 0 || currentShuttle.oxigen == 0));
         shipOutOfRange.SetActive(unreachable);
 
-        labelFollowingShuttle.gameObject.SetActive(currentShuttle.hp > 0);
+        labelFollowingShuttle.gameObject.SetActive(currentShuttle.active && currentShuttle.hp > 0);
+
+        labelTraveled.gameObject.SetActive(launched);
+        durationTrip.gameObject.SetActive(launched);
+        if (active)
+        {
+            labelTraveled.text = "Distance traveled: " + (currentShuttle.traveled * 2).ToString("  0.0") + " million Km";
+            durationTrip.text = "Mission duration: " + (marsOrbit.day-misionStartDate).ToString("  0") + " SOL";
+        }
     }
     
     private void OnDrawGizmos()
