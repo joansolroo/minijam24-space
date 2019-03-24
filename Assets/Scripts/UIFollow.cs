@@ -12,16 +12,26 @@ public class UIFollow : MonoBehaviour
     public Camera worldCamera;
     [Tooltip("Canvas set in Screen Space Camera mode")]
     public Canvas canvas;
-
+    RectTransform rt;
+    RectTransform parent;
     private void Start()
     {
         if(worldCamera==null)
             worldCamera = Camera.main;
+        rt = GetComponent<RectTransform>();
+        parent = (RectTransform)rt.parent;
+    }
+    private void Update()
+    {
+        UpdatePosition();
     }
     private void LateUpdate()
     {
-        var rt = GetComponent<RectTransform>();
-        RectTransform parent = (RectTransform)rt.parent;
+        UpdatePosition();
+    }
+
+    void UpdatePosition()
+    {
         var vp = worldCamera.WorldToViewportPoint(target.transform.position);
         var sp = canvas.worldCamera.ViewportToScreenPoint(vp);
         Vector3 worldPoint;
