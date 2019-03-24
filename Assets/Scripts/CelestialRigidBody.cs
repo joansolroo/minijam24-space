@@ -22,7 +22,7 @@ public class CelestialRigidBody : MonoBehaviour
         foreach(CelestialRigidBody body in bodies)
         {
             Vector3 direction = body.transform.position- universePosition;
-            force += direction.normalized/direction.magnitude * body.rb.mass*Time.unscaledDeltaTime*100;
+            force += direction.normalized/Mathf.Pow(direction.magnitude,1.2f) * body.rb.mass*Time.unscaledDeltaTime*100;
         }
 
         return force;

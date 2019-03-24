@@ -29,6 +29,9 @@ public class MisionControl : MonoBehaviour
     [SerializeField] GameObject shipOutOfRange;
     [SerializeField] GameObject shipDead;
 
+    [SerializeField] GameObject buttonDepartureLeft;
+    [SerializeField] GameObject buttonDepartureRight;
+
     [SerializeField] UIFollow labelFollowingShuttle;
     [SerializeField] [Range(0, 1)] float departure;
     // Start is called before the first frame update
@@ -131,6 +134,8 @@ public class MisionControl : MonoBehaviour
         buttonRight.interactable = active;
         buttonStabilize.interactable = active;
 
+        buttonDepartureLeft.SetActive(!launched);
+        buttonDepartureRight.SetActive(!launched);
         hpBar.SetValue(shuttleProfile.maxFuelStage1 > 0 ? (currentShuttle.fuelStage1 * 100 / shuttleProfile.maxFuelStage1) : 0);
         fuelBar.SetValue(shuttleProfile.maxFuel>0? (currentShuttle.fuel*100 / shuttleProfile.maxFuel):0);
         oxigenBar.SetValue(shuttleProfile.maxOxigen > 0 ? (currentShuttle.oxigen * 100 / shuttleProfile.maxOxigen) : 0);

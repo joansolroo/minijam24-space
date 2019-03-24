@@ -103,14 +103,15 @@ public class Shuttle : MonoBehaviour
                         rb.AddTorque(transform.up * -forceTorque);
                         action = true;
                     }
-                    else if (nextAction == ShuttleAction.stabilize)
+                   /* else if (nextAction == ShuttleAction.stabilize)
                     {
-                        rb.AddForce(this.transform.TransformVector(Vector3.back) * forceFoward);
-                        transform.LookAt(transform.position + rb.velocity, Vector3.up);
+                        
+                       
                         action = true;
-                    }
+                    }*/
                 }
             }
+
         }
         if (nextAction == ShuttleAction.deactivate)
         {
@@ -140,6 +141,13 @@ public class Shuttle : MonoBehaviour
                 active = false;
             }
         }
+
+        /*float angle = -Vector3.Angle(rb.velocity, this.transform.TransformVector(Vector3.forward));
+        Debug.Log("stabilize:" + rb.velocity + "," + this.transform.TransformVector(Vector3.forward) + "::" + angle);
+        rb.AddTorque(transform.up * angle * Time.deltaTime*0.1f);
+        */
+        transform.LookAt(transform.position + rb.velocity, Vector3.up);
+
         nextAction = ShuttleAction.none;
     }
     int frame = 0;
