@@ -13,6 +13,7 @@ public class Shuttle : MonoBehaviour
     [Header("Profile")]
     public ShuttleProfile profile;
     [SerializeField] float launchForce = 1;
+    [SerializeField] float forceS1Foward = 1;
     [SerializeField] float forceFoward = 1;
     [SerializeField] float forceSideways = 1;
     [SerializeField] float forceTorque = 1;
@@ -182,7 +183,7 @@ public class Shuttle : MonoBehaviour
 
             }
             ++frame;
-            if (frame % 10 == 0)
+            if (frame % 1 == 0)
             {
                 frame = 0;
                 bool expectedCollision;
@@ -214,9 +215,11 @@ public class Shuttle : MonoBehaviour
         launched = true;
         rb.isKinematic = false;
         rb.AddForce(this.transform.TransformVector(Vector3.forward) * launchForce);
-        for(float t =0; t < 1f; t += Time.deltaTime)
+        rb.AddForce(this.transform.TransformVector(Vector3.forward) * forceS1Foward * fuelStage1);
+        for (float t =0; fuelStage1 >0; t += Time.deltaTime)
         {
-            fuelStage1 = (1-t)*profile.maxFuelStage1;
+            fuelStage1 -= Time.deltaTime;// profile.maxFuelStage1;
+            //rb.AddForce(this.transform.TransformVector(Vector3.forward) * forceS1Foward * Time.deltaTime);
             yield return new WaitForEndOfFrame();
         }
         fuelStage1 *= 0;
@@ -248,14 +251,15 @@ public class Shuttle : MonoBehaviour
         DoExplode();
     }
 
+    [Range(2,10)]public float trajectoryTimeScaleFactor = 5;//MAGIC NUMBER :(
     List<Vector3> ComputeTrajectory(out bool expectedCollision)
     {
         expectedCollision = false;
         float duration = 10;
-        float step = Time.deltaTime * 5; //MAGIC NUMBER :(
+        float step = Time.deltaTime * trajectoryTimeScaleFactor; 
         int collisionTest = (int)(10 / Time.timeScale);
         Vector3 pos = transform.position;
-        Vector3 velocity = launched ? rb.velocity : transform.TransformVector(Vector3.forward) * step * launchForce / 5; //MAGIC NUMBER :(
+        Vector3 velocity = launched ? rb.velocity : transform.TransformVector(Vector3.forward) * step * (launchForce+ forceS1Foward * fuelStage1) / trajectoryTimeScaleFactor; //MAGIC NUMBER :(
 
         // Gizmos.DrawLine(pos, pos + velocity);
 
@@ -267,7 +271,7 @@ public class Shuttle : MonoBehaviour
         {
 
             Vector3 newPos = pos + velocity * step;
-            Vector3 forceAtnewPos = CelestialRigidBody.GetForceAt(newPos) * forceScale;
+            Vector3 forceAtnewPos = PhysicsSpace.GetForceAt(newPos) * forceScale;
             // Gizmos.DrawSphere(newPos, 0.1f);
             //Gizmos.DrawLine(pos, newPos);
             pos = newPos;

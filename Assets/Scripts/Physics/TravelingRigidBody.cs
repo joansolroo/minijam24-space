@@ -15,6 +15,6 @@ public class TravelingRigidBody : MonoBehaviour
     }
     private void Update()
     {
-        rb.AddForce(CelestialRigidBody.GetForceAt(this.transform.position) * forceScale);
+        rb.AddForce(PhysicsSpace.GetForceAt(this.transform.position) * forceScale);
     }
 }

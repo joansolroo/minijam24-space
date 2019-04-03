@@ -900,6 +900,7 @@ MonoBehaviour:
   explosion: {fileID: 8273249510541067269}
   profile: {fileID: 0}
   launchForce: 1000
+  forceS1Foward: 1
   forceFoward: 50
   forceSideways: 30
   forceTorque: 10
@@ -923,6 +924,7 @@ MonoBehaviour:
   updatedLine: {fileID: 8273249510840924370}
   pastLine: {fileID: 8273249511213475795}
   pathColorLost: {r: 255, g: 0, b: 0, a: 100}
+  trajectoryTimeScaleFactor: 5
   safeDiameter: 1
 --- !u!1 &8273249511213475797
 GameObject:
