@@ -110,15 +110,15 @@ public class CelestialRigidBody : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawLine(transform.position, transform.position + rb.velocity.normalized);
         }
-        
+
         //Gizmos.color = Color.red;
-        float radius = this.transform.lossyScale.magnitude/2;
-        float massSqrt = Mathf.Pow(rb.mass,1/8f);
-        for (float r = 0.5f; r < massSqrt*4; r += massSqrt * 0.05f) 
+        float radius = this.transform.lossyScale.magnitude / 2;
+        float massSqrt = Mathf.Pow(rb.mass, 1 / 8f);
+        for (float r = 0.5f; r < massSqrt * 4; r += massSqrt * 0.2f)
         {
             Vector3 p0 = Vector3.zero;
             bool init = false;
-            for (int u = 0; u <= 360; u += 10)
+            for (int u = 0; u <= 360; u += 20)
             {
                 if (!init)
                 {
@@ -140,17 +140,19 @@ public class CelestialRigidBody : MonoBehaviour
                 }
             }
         }
-        for (int u = 0; u <= 360; u += 10)
+        for (int u = 0; u <= 360; u += 20)
         {
             Vector3 p0 = Vector3.zero;
+            Vector3 f0 = Vector3.zero;
             bool init = false;
-            for (float r = 0.5f; r < massSqrt * 4; r += massSqrt * 0.05f)
+            for (float r = 0.5f; r < massSqrt * 4; r += massSqrt * 0.2f)
             {
                 if (!init)
                 {
                     p0 = this.transform.TransformPoint(r * Mathf.Cos(u * Mathf.Deg2Rad), 0, r * Mathf.Sin(u * Mathf.Deg2Rad));
                     Vector3 f = PhysicsSpace.GetForceAt(p0);
                     p0.y -= f.magnitude * 0.1f;
+                    f0 = f;
                     init = true;
                 }
                 else
@@ -162,7 +164,9 @@ public class CelestialRigidBody : MonoBehaviour
 
                     Gizmos.color = new Color(1, 1, 1, f.magnitude * 0.01f);
                     Gizmos.DrawLine(p0, p1);
+                    
                     p0 = p1;
+                    f0 = f;
                 }
             }
         }
