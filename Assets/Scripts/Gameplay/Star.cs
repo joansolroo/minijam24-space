@@ -25,7 +25,7 @@ public class Star : MonoBehaviour
         ComputeNeighbors();
     }
     void ComputeNeighbors (){
-       neighbors = Physics.OverlapSphere(this.transform.position, 5);
+       neighbors = Physics.OverlapSphere(this.transform.position, 10);
         Array.Sort(neighbors, new Comp(this.transform.position));
     }
     private void OnDrawGizmos()
@@ -34,7 +34,7 @@ public class Star : MonoBehaviour
         
         Gizmos.color = new Color(0, 1, 1, 0.05f);
 
-        for (int n = 0; n < 5 && n < neighbors.Length; ++n)
+        for (int n = 0; n < 4 && n < neighbors.Length; ++n)
         {
             Gizmos.DrawLine(this.transform.position, neighbors[n].transform.position);
         }

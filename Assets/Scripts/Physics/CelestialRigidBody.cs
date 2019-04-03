@@ -37,7 +37,7 @@ public class CelestialRigidBody : MonoBehaviour
 
     private void FixedUpdate()
     {
-        tYear = (tYear + Time.deltaTime / yearPeriod) % 1;
+        //tYear = (tYear + Time.deltaTime / yearPeriod) % 1;
         Vector3 newPos = orbit.Evaluate(tYear);
         rb.velocity = (newPos - transform.position) / Time.deltaTime;
 
@@ -75,7 +75,7 @@ public class CelestialRigidBody : MonoBehaviour
             Gizmos.color = Color.gray;
             Utils.GizmosExtensions.DrawWireEllipse(orbit.center, orbit.size, 80, Quaternion.identity);
 
-            /*for (int i = 0; i < 20; ++i)
+            for (int i = 0; i < 20; ++i)
             {
                 Gizmos.DrawSphere(orbit.Evaluate(i / 20f), 0.1f);
             }
@@ -95,7 +95,7 @@ public class CelestialRigidBody : MonoBehaviour
                     float t = ((float)i) / count;
                     Gizmos.DrawLine(orbit.Evaluate(t), currentOrbit.Evaluate(t));
                 }
-            }*/
+            }
         }
         if (rb != null)
         {
