@@ -15,6 +15,6 @@ public class TravelingRigidBody : MonoBehaviour
     }
     private void Update()
     {
-        rb.AddForce(PhysicsSpace.GetForceAt(this.transform.position) * forceScale);
+        rb.AddForce(PhysicsSpace.GetForceAt(this.transform.position) * forceScale * Time.unscaledDeltaTime * 100);
     }
 }

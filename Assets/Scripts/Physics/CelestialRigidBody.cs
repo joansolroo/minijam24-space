@@ -67,6 +67,12 @@ public class CelestialRigidBody : MonoBehaviour
         rb.velocity = (newPos-transform.position)/Time.deltaTime;
     }
     */
+
+    public Vector3 GetForceAt(Vector3 universePosition)
+    {
+        Vector3 direction = this.transform.position - universePosition;
+        return direction.normalized / Mathf.Pow(direction.magnitude, 1.2f) * this.rb.mass;
+    }
     private void OnDrawGizmos()
     {
 
@@ -74,7 +80,7 @@ public class CelestialRigidBody : MonoBehaviour
         {
             Gizmos.color = Color.gray;
             Utils.GizmosExtensions.DrawWireEllipse(orbit.center, orbit.size, 80, Quaternion.identity);
-
+            /*
             for (int i = 0; i < 20; ++i)
             {
                 Gizmos.DrawSphere(orbit.Evaluate(i / 20f), 0.1f);
@@ -95,7 +101,7 @@ public class CelestialRigidBody : MonoBehaviour
                     float t = ((float)i) / count;
                     Gizmos.DrawLine(orbit.Evaluate(t), currentOrbit.Evaluate(t));
                 }
-            }
+            }*/
         }
         if (rb != null)
         {
@@ -103,6 +109,62 @@ public class CelestialRigidBody : MonoBehaviour
             Gizmos.DrawLine(transform.position, transform.position + rb.velocity);
             Gizmos.color = Color.green;
             Gizmos.DrawLine(transform.position, transform.position + rb.velocity.normalized);
+        }
+        
+        //Gizmos.color = Color.red;
+        float radius = this.transform.lossyScale.magnitude/2;
+        float massSqrt = Mathf.Pow(rb.mass,1/8f);
+        for (float r = 0.5f; r < massSqrt*4; r += massSqrt * 0.05f) 
+        {
+            Vector3 p0 = Vector3.zero;
+            bool init = false;
+            for (int u = 0; u <= 360; u += 10)
+            {
+                if (!init)
+                {
+                    p0 = this.transform.TransformPoint(r * Mathf.Cos(u * Mathf.Deg2Rad), 0, r * Mathf.Sin(u * Mathf.Deg2Rad));
+                    Vector3 f = PhysicsSpace.GetForceAt(p0);
+                    p0.y -= f.magnitude * 0.1f;
+                    init = true;
+                }
+                else
+                {
+                    Vector3 p1 = this.transform.TransformPoint(r * Mathf.Cos(u * Mathf.Deg2Rad), 0, r * Mathf.Sin(u * Mathf.Deg2Rad));
+                    Vector3 f = PhysicsSpace.GetForceAt(p1);
+                    p1.y -= f.magnitude * 0.1f;
+                    //Gizmos.DrawWireSphere(p1, f.magnitude * 0.05f);
+
+                    Gizmos.color = new Color(1, 1, 1, f.magnitude * 0.01f);
+                    Gizmos.DrawLine(p0, p1);
+                    p0 = p1;
+                }
+            }
+        }
+        for (int u = 0; u <= 360; u += 10)
+        {
+            Vector3 p0 = Vector3.zero;
+            bool init = false;
+            for (float r = 0.5f; r < massSqrt * 4; r += massSqrt * 0.05f)
+            {
+                if (!init)
+                {
+                    p0 = this.transform.TransformPoint(r * Mathf.Cos(u * Mathf.Deg2Rad), 0, r * Mathf.Sin(u * Mathf.Deg2Rad));
+                    Vector3 f = PhysicsSpace.GetForceAt(p0);
+                    p0.y -= f.magnitude * 0.1f;
+                    init = true;
+                }
+                else
+                {
+                    Vector3 p1 = this.transform.TransformPoint(r * Mathf.Cos(u * Mathf.Deg2Rad), 0, r * Mathf.Sin(u * Mathf.Deg2Rad));
+                    Vector3 f = PhysicsSpace.GetForceAt(p1);
+                    p1.y -= f.magnitude * 0.1f;
+                    //Gizmos.DrawWireSphere(p1, f.magnitude * 0.05f);
+
+                    Gizmos.color = new Color(1, 1, 1, f.magnitude * 0.01f);
+                    Gizmos.DrawLine(p0, p1);
+                    p0 = p1;
+                }
+            }
         }
     }
 }

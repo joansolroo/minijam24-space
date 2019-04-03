@@ -271,7 +271,7 @@ public class Shuttle : MonoBehaviour
         {
 
             Vector3 newPos = pos + velocity * step;
-            Vector3 forceAtnewPos = PhysicsSpace.GetForceAt(newPos) * forceScale;
+            Vector3 forceAtnewPos = PhysicsSpace.GetForceAt(newPos) * forceScale * Time.unscaledDeltaTime * 100;
             // Gizmos.DrawSphere(newPos, 0.1f);
             //Gizmos.DrawLine(pos, newPos);
             pos = newPos;

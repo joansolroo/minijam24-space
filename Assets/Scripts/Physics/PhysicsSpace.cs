@@ -90,6 +90,65 @@ public class PhysicsSpace : MonoBehaviour
     {
         instance = this;
     }
+    /*
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        float radius = this.transform.lossyScale.magnitude / 2;
+        float massSqrt = 10;// Mathf.Pow(rb.mass, 1 / 8f);
+        for (float r = 0.5f; r < massSqrt * 4; r += massSqrt * 0.05f)
+        {
+            Vector3 p0 = Vector3.zero;
+            bool init = false;
+            for (int u = 0; u <= 360; u += 5)
+            {
+                if (!init)
+                {
+                    p0 = this.transform.TransformPoint(r * Mathf.Cos(u * Mathf.Deg2Rad), 0, r * Mathf.Sin(u * Mathf.Deg2Rad));
+                    Vector3 f = GetForceAt(p0);
+                    p0.y -= f.magnitude * 0.01f;
+                    init = true;
+                }
+                else
+                {
+                    Vector3 p1 = this.transform.TransformPoint(r * Mathf.Cos(u * Mathf.Deg2Rad), 0, r * Mathf.Sin(u * Mathf.Deg2Rad));
+                    Vector3 f = GetForceAt(p1);
+                    p1.y -= f.magnitude * 0.01f;
+                    //Gizmos.DrawWireSphere(p1, f.magnitude * 0.05f);
+
+                    Gizmos.color = new Color(0, 1, 1, f.magnitude * 0.01f);
+                    Gizmos.DrawLine(p0, p1);
+                    p0 = p1;
+                }
+            }
+        }
+        for (int u = 0; u <= 360; u += 5)
+        {
+            Vector3 p0 = Vector3.zero;
+            bool init = false;
+            for (float r = 0.5f; r < massSqrt * 4; r += massSqrt * 0.05f)
+            {
+                if (!init)
+                {
+                    p0 = this.transform.TransformPoint(r * Mathf.Cos(u * Mathf.Deg2Rad), 0, r * Mathf.Sin(u * Mathf.Deg2Rad));
+                    Vector3 f = GetForceAt(p0);
+                    p0.y -= f.magnitude * 0.01f;
+                    init = true;
+                }
+                else
+                {
+                    Vector3 p1 = this.transform.TransformPoint(r * Mathf.Cos(u * Mathf.Deg2Rad), 0, r * Mathf.Sin(u * Mathf.Deg2Rad));
+                    Vector3 f = GetForceAt(p1);
+                    p1.y -= f.magnitude * 0.01f;
+                    //Gizmos.DrawWireSphere(p1, f.magnitude * 0.05f);
+
+                    Gizmos.color = new Color(0, 1, 1, f.magnitude * 0.01f);
+                    Gizmos.DrawLine(p0, p1);
+                    p0 = p1;
+                }
+            }
+        }
+    }*/
 
     public static Trajectory ComputeTrajectory(Rigidbody rb, float time, LayerMask layerMask, float safeDiameter, float forceScale)
     {
@@ -111,7 +170,7 @@ public class PhysicsSpace : MonoBehaviour
         {
 
             Vector3 newPos = pos + velocity * step;
-            Vector3 forceAtnewPos = PhysicsSpace.GetForceAt(newPos) * forceScale;
+            Vector3 forceAtnewPos = PhysicsSpace.GetForceAt(newPos) * forceScale * Time.unscaledDeltaTime * 100;
 
             pos = newPos;
             velocity = velocity + forceAtnewPos;
@@ -154,8 +213,7 @@ public class PhysicsSpace : MonoBehaviour
             inscribedCircle.y = Mathf.Abs(delta.z) / Mathf.Abs(Mathf.Cos(angleCenter));
             if (Mathf.Sin(angleCenter) == 0) inscribedCircle.x = inscribedCircle.y;
         }
-        //Utils.GizmosExtensions.DrawWireEllipse(parent.position, inscribedCircle, 20, Quaternion.identity);
-
+        
 
         result.size = inscribedCircle;
         return result;
@@ -165,8 +223,7 @@ public class PhysicsSpace : MonoBehaviour
         Vector3 force = Vector3.zero;
         foreach (CelestialRigidBody body in CelestialRigidBody.celestialBodies)
         {
-            Vector3 direction = body.transform.position - universePosition;
-            force += direction.normalized / Mathf.Pow(direction.magnitude, 1.2f) * body.rb.mass * Time.unscaledDeltaTime * 100;
+            force += body.GetForceAt(universePosition);
         }
 
         return force;
