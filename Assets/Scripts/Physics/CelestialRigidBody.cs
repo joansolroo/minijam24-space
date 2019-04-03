@@ -37,7 +37,7 @@ public class CelestialRigidBody : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //tYear = (tYear + Time.deltaTime / yearPeriod) % 1;
+        tYear = (tYear + Time.deltaTime / yearPeriod) % 1;
         Vector3 newPos = orbit.Evaluate(tYear);
         rb.velocity = (newPos - transform.position) / Time.deltaTime;
 
